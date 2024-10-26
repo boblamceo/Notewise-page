@@ -31,14 +31,36 @@ export default function Home() {
                     }, 1000);
                 }}
             />
-            <div className="max-h-screen min-h-screen flex flex-col justify-end relative">
-                <div className="flex flex-col justify-center pl-[10vw] pb-[2vw]">
-                    <div className="text-[7vw] font-bold z-20">
+            <div className="min-h-screen flex flex-col justify-end relative">
+                <div className="flex flex-row items-center justify-between pl-[10vw] pr-[10vw] pb-[2vw]">
+                    <div className="text-[7vw] font-bold z-20 mt-[10vh]">
+                        <span className="drop-shadow-[0_0_1vw_rgba(255,255,255,1)] animate-pulse duration-[5]">
+                            AI.
+                        </span>{" "}
+                        <br />
                         Education. <br />
                         Efficiently. <br />
                         Effectively.
                     </div>
+                    <motion.img
+                        src={"/images/book.gif"}
+                        className="w-[35vw] z-20 "
+                        animate={{
+                            scale: [1, 1.2, 1],
+                        }}
+                        transition={{
+                            repeat: Infinity,
+                            duration: 5,
+                            ease: "linear",
+                        }}
+                    ></motion.img>
                 </div>
+                <span className="absolute text-[7vw] font-bold z-20 top-[10vh] left-[10vw]">
+                    AI.
+                </span>
+                <span className="absolute text-[7vw] font-bold top-[10.3vh] left-[10.3vw] text-[#590B75]">
+                    AI.
+                </span>
                 <motion.img
                     src={"/images/Planet.svg"}
                     className="w-screen absolute bottom-0"
