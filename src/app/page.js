@@ -34,7 +34,7 @@ export default function Home() {
             <div className="min-h-screen flex flex-col justify-end relative">
                 <div className="flex flex-row items-center justify-between pl-[10vw] pr-[10vw] pb-[2vw]">
                     <div className="text-[7vw] font-bold z-20 mt-[10vh]">
-                        <span className="drop-shadow-[0_0_1vw_rgba(255,255,255,1)] animate-pulse duration-[5]">
+                        <span className="drop-shadow-[0_0_1vw_rgba(255,255,255,0.8)] animate-pulse duration-[5]">
                             AI.
                         </span>{" "}
                         <br />
@@ -58,7 +58,7 @@ export default function Home() {
                 <span className="absolute text-[7vw] font-bold z-20 top-[10vh] left-[10vw]">
                     AI.
                 </span>
-                <span className="absolute text-[7vw] font-bold top-[10.3vh] left-[10.3vw] text-[#590B75]">
+                <span className="absolute text-[7vw] font-bold top-[calc(10vh+5px)] left-[calc(10vw+5px)] text-[#1e1e1e]">
                     AI.
                 </span>
                 <motion.img

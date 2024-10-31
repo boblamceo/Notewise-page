@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {
+    Alert,
     createTheme,
     IconButton,
     LinearProgress,
@@ -20,6 +21,8 @@ import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { useCookies } from "next-client-cookies";
+import { useRouter } from "next/navigation";
 
 const theme = createTheme({
     status: {
@@ -37,17 +40,22 @@ const Signup = () => {
     const [goal, setGoal] = useState(null);
     const [infoHovered, setInfoHovered] = useState(0);
     const [signUpHovered, setSignHovered] = useState(0);
+    const [signUpWrong, setSignUpWrong] = useState(null);
     const signUpButton = useRef(null);
+    const cookies = useCookies();
+    const router = useRouter();
+
     const handleGoogleLogin = () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                console.log("Google Login Success:", user);
-                // Handle user information and redirection here
+                console.log(user);
+                cookies.set("email", user.email);
+                router.push("/main");
             })
             .catch((error) => {
-                console.error("Google Login Error:", error);
+                console.log("Google Login Error:", error);
             });
     };
     useEffect(() => {
@@ -81,6 +89,7 @@ const Signup = () => {
             setIconLength(1);
         }, 250);
     };
+
     return (
         <ThemeProvider theme={theme}>
             <motion.div
@@ -97,12 +106,18 @@ const Signup = () => {
                         className="h-[4.5vw] logo"
                     ></img>
                 </div>
-                <div className="w-[50vw] h-screen flex justify-center flex-col pl-[10vw] pr-[10vw]">
+                <div className="w-[50vw] h-screen flex justify-center flex-col pl-[10vw] pr-[10vw] scale-95">
                     <div className="font-bold text-[3vw] mb-[1vh]">Welcome</div>
                     <div className="text-[1.5vw] mb-[3vh] text-gray-500">
                         Sign up to unlock Notewise!
                     </div>
-                    <div className="bg-[#414459] w-[30vw] flex flex-row p-[1vw] rounded-full items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)]">
+                    <div
+                        className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
+                            signUpWrong === "Provide a username"
+                                ? "animate-shake bg-[#CC0000] text-white"
+                                : "bg-[#414459]"
+                        }`}
+                    >
                         <AccountCircleIcon className="text-[4vh]" />
                         <input
                             className="w-[20vw] ml-[2vw] bg-transparent outline-none text-[1.2vw]"
@@ -111,7 +126,13 @@ const Signup = () => {
                             onChange={(e) => setUsernameInput(e.target.value)}
                         ></input>
                     </div>
-                    <div className="bg-[#414459] w-[30vw] flex flex-row p-[1vw] rounded-full items-center mt-[3vh] hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)]">
+                    <div
+                        className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center mt-[3vh] hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
+                            signUpWrong === "Provide a password"
+                                ? "animate-shake bg-[#CC0000] text-white"
+                                : "bg-[#414459]"
+                        }`}
+                    >
                         <Email className="text-[4vh]" />
                         <input
                             className="w-[20vw] ml-[2vw] bg-transparent outline-none text-[1.2vw]"
@@ -120,7 +141,13 @@ const Signup = () => {
                             onChange={(e) => setEmailInput(e.target.value)}
                         ></input>
                     </div>
-                    <div className="bg-[#414459] h-[calc(4vh+2vw)] w-[30vw] flex flex-row pl-[1vw] pr-[1vw] rounded-full mt-[3vh] items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)]">
+                    <div
+                        className={`h-[calc(4vh+2vw)] w-[30vw] flex flex-row pl-[1vw] pr-[1vw] rounded-full mt-[3vh] items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
+                            signUpWrong === "Provide a valid email address"
+                                ? "animate-shake bg-[#CC0000] text-white"
+                                : "bg-[#414459]"
+                        }`}
+                    >
                         <Lock className="text-[4vh]" />
                         <input
                             className="w-[20vw] ml-[2vw] bg-transparent outline-none text-[1.2vw]"
@@ -216,14 +243,48 @@ const Signup = () => {
                             <Info className="text-white text-[1.2vw]" />
                         </IconButton>
                         <motion.div
-                            className="bg-[#414459] p-[0.8vw] rounded-lg text-[1vw] absolute right-[0.6vw] top-[1.5vw] pointer-events-none"
+                            className="bg-[#414459] p-[0.8vw] rounded-lg text-[1vw] absolute right-[0.6vw] top-[1.5vw] pointer-events-none z-20"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: infoHovered }}
                         >
                             {goal}
                         </motion.div>
                     </div>
-                    <div className="rounded-xl border-white border-2 w-full p-[1vw] flex flex-row font-bold text-[1vw] justify-center items-center mt-[2vh] cursor-pointer hover:scale-[1.02] active:scale-[1.05]">
+                    <motion.div
+                        className="rounded-xl border-white border-2 w-full p-[1vw] flex flex-row font-bold text-[1vw] justify-center items-center mt-[2vh] cursor-pointer"
+                        initial={{
+                            scale: 1,
+                        }}
+                        whileHover={{
+                            scale: 1.05,
+                        }}
+                        transition={{
+                            duration: 0.1,
+                        }}
+                        onClick={() => {
+                            handleGoogleLogin();
+                            confetti({
+                                particleCount: 150,
+                                spread: 60,
+                                origin: {
+                                    x:
+                                        (signUpButton.current.getBoundingClientRect()
+                                            .x +
+                                            signUpButton.current.getBoundingClientRect()
+                                                .width /
+                                                2) /
+                                        window.innerWidth,
+                                    y:
+                                        (signUpButton.current.getBoundingClientRect()
+                                            .top +
+                                            signUpButton.current.getBoundingClientRect()
+                                                .height /
+                                                2) /
+                                        window.innerHeight,
+                                },
+                            });
+                        }}
+                    >
                         <SvgIcon className="text-[1.5vw] mr-[1vw]">
                             <svg
                                 width="800px"
@@ -251,7 +312,7 @@ const Signup = () => {
                             </svg>
                         </SvgIcon>
                         Log In With Google
-                    </div>
+                    </motion.div>
                     <div
                         className="mt-[2vh] flex flex-row items-center justify-between cursor-pointer"
                         onMouseEnter={() => {
@@ -261,27 +322,24 @@ const Signup = () => {
                             setSignHovered(0);
                         }}
                         onClick={() => {
-                            confetti({
-                                particleCount: 150,
-                                spread: 60,
-                                origin: {
-                                    x:
-                                        (signUpButton.current.getBoundingClientRect()
-                                            .x +
-                                            signUpButton.current.getBoundingClientRect()
-                                                .width /
-                                                2) /
-                                        window.innerWidth,
-                                    y:
-                                        (signUpButton.current.getBoundingClientRect()
-                                            .top +
-                                            signUpButton.current.getBoundingClientRect()
-                                                .height /
-                                                2) /
-                                        window.innerHeight,
-                                },
-                            });
-                            handleGoogleLogin();
+                            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            let problem = null;
+                            if (!emailPattern || !emailInput) {
+                                problem = "Provide a valid email address";
+                            }
+                            if (!passwordInput) {
+                                problem = "Provide a password";
+                            }
+                            if (!usernameInput) {
+                                problem = "Provide a username";
+                            }
+                            setSignUpWrong(problem);
+                            if (!problem) {
+                                cookies.set("email", emailInput);
+                                cookies.set("password", passwordInput);
+                                cookies.set("displayName", usernameInput);
+                                router.push("/main");
+                            }
                         }}
                         ref={signUpButton}
                     >
@@ -304,6 +362,20 @@ const Signup = () => {
                         </div>
                     </div>
                 </div>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: signUpWrong ? 1 : 0 }}
+                    className="absolute bottom-[5vh] left-0 right-0 w-fit ms-auto me-auto"
+                >
+                    <Alert
+                        severity="error"
+                        onClose={() => {
+                            setSignUpWrong(null);
+                        }}
+                    >
+                        {signUpWrong}
+                    </Alert>
+                </motion.div>
             </motion.div>
         </ThemeProvider>
     );
