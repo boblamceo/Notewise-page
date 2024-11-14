@@ -7,7 +7,6 @@ import {
     Visibility,
     VisibilityOff,
 } from "@mui/icons-material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {
     Alert,
     createTheme,
@@ -20,7 +19,8 @@ import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import { useCookies } from "next-client-cookies";
 import { useRouter } from "next/navigation";
 
@@ -33,7 +33,6 @@ const theme = createTheme({
 const Signup = () => {
     const [passwordVisible, setVisibility] = useState(false);
     const [iconLength, setIconLength] = useState(1);
-    const [usernameInput, setUsernameInput] = useState("");
     const [emailInput, setEmailInput] = useState("");
     const [passwordInput, setPasswordInput] = useState("");
     const [passwordStrength, setPasswordStrength] = useState(0);
@@ -41,18 +40,43 @@ const Signup = () => {
     const [infoHovered, setInfoHovered] = useState(0);
     const [signUpHovered, setSignHovered] = useState(0);
     const [signUpWrong, setSignUpWrong] = useState(null);
+    const [blobVisible, setBlobVisible] = useState(false);
     const signUpButton = useRef(null);
     const cookies = useCookies();
     const router = useRouter();
+
+    const addToFirebase = async (collect, stuff, filter, callback) => {
+        const querySnapshot = await getDocs(collection(db, collect));
+        const final = [];
+        querySnapshot.forEach((doc) => {
+            final.push(doc.data());
+        });
+        let filtered = final.filter(filter);
+        if (filtered.length) {
+            setSignUpWrong("This account already exists");
+        } else {
+            await addDoc(collection(db, collect), stuff);
+            callback();
+        }
+    };
 
     const handleGoogleLogin = () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                console.log(user);
                 cookies.set("email", user.email);
-                router.push("/main");
+                addToFirebase(
+                    "users",
+                    {
+                        email: user.email,
+                    },
+                    (item) => item.email === user.email,
+
+                    () => {
+                        router.push("/main");
+                    }
+                );
             })
             .catch((error) => {
                 console.log("Google Login Error:", error);
@@ -93,7 +117,7 @@ const Signup = () => {
     return (
         <ThemeProvider theme={theme}>
             <motion.div
-                className="w-screen h-screen flex flex-row bg-[#171820]"
+                className="w-screen min-h-screen overflow-y-hidden flex flex-row bg-[#171820] text-white "
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{
@@ -103,7 +127,10 @@ const Signup = () => {
                 <div className="bg-gradient-to-br from-violet-100 to-indigo-700 to-65% w-[50vw] h-screen p-[1vw]">
                     <img
                         src={"/images/Logo.png"}
-                        className="h-[4.5vw] logo"
+                        className="h-[4.5vw] logo cursor-pointer"
+                        onClick={() => {
+                            router.push("/");
+                        }}
                     ></img>
                 </div>
                 <div className="w-[50vw] h-screen flex justify-center flex-col pl-[10vw] pr-[10vw] scale-95">
@@ -111,21 +138,7 @@ const Signup = () => {
                     <div className="text-[1.5vw] mb-[3vh] text-gray-500">
                         Sign up to unlock Notewise!
                     </div>
-                    <div
-                        className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
-                            signUpWrong === "Provide a username"
-                                ? "animate-shake bg-[#CC0000] text-white"
-                                : "bg-[#414459]"
-                        }`}
-                    >
-                        <AccountCircleIcon className="text-[4vh]" />
-                        <input
-                            className="w-[20vw] ml-[2vw] bg-transparent outline-none text-[1.2vw]"
-                            placeholder="Username"
-                            value={usernameInput}
-                            onChange={(e) => setUsernameInput(e.target.value)}
-                        ></input>
-                    </div>
+
                     <div
                         className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center mt-[3vh] hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
                             signUpWrong === "Provide a password"
@@ -311,7 +324,7 @@ const Signup = () => {
                                 />
                             </svg>
                         </SvgIcon>
-                        Log In With Google
+                        Sign Up With Google
                     </motion.div>
                     <div
                         className="mt-[2vh] flex flex-row items-center justify-between cursor-pointer"
@@ -330,15 +343,22 @@ const Signup = () => {
                             if (!passwordInput) {
                                 problem = "Provide a password";
                             }
-                            if (!usernameInput) {
-                                problem = "Provide a username";
-                            }
                             setSignUpWrong(problem);
                             if (!problem) {
                                 cookies.set("email", emailInput);
                                 cookies.set("password", passwordInput);
-                                cookies.set("displayName", usernameInput);
-                                router.push("/main");
+                                addToFirebase(
+                                    "users",
+                                    {
+                                        email: emailInput,
+                                        password: passwordInput,
+                                    },
+                                    (item) => item.email === emailInput,
+
+                                    () => {
+                                        router.push("/main");
+                                    }
+                                );
                             }
                         }}
                         ref={signUpButton}
@@ -360,6 +380,28 @@ const Signup = () => {
                                 className={`text-[2vw] text-white absolute z-10 left-[1vw]  transition-all duration-200`}
                             />
                         </div>
+                    </div>
+                    <div className="text-white text-[1vw] mt-[1vh] ml-auto mr-auto">
+                        Already have an account?{" "}
+                        <span
+                            className="text-cyan-400 cursor-pointer"
+                            onClick={() => {
+                                setBlobVisible(true);
+                                setTimeout(() => {
+                                    router.push("/login");
+                                }, 1000);
+                            }}
+                        >
+                            Log In
+                            <motion.img
+                                className="absolute z-40 h-[10px] top-0 bottom-0"
+                                src={"/images/blob.svg"}
+                                animate={{
+                                    scale: blobVisible ? window.innerHeight : 0,
+                                }}
+                                transition={{ duration: 1 }}
+                            ></motion.img>
+                        </span>
                     </div>
                 </div>
                 <motion.div
