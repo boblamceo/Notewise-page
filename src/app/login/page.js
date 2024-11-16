@@ -42,19 +42,14 @@ const Login = () => {
     const cookies = useCookies();
     const router = useRouter();
 
-    const addToFirebase = async (collect, stuff, filter, callback) => {
-        const querySnapshot = await getDocs(collection(db, collect));
+    const accountExists = async (filter) => {
+        const querySnapshot = await getDocs(collection(db, "users"));
         const final = [];
         querySnapshot.forEach((doc) => {
             final.push(doc.data());
         });
         let filtered = final.filter(filter);
-        if (filtered.length) {
-            setSignUpWrong("This account already exists");
-        } else {
-            await addDoc(collection(db, collect), stuff);
-            callback();
-        }
+        return filtered.length;
     };
 
     const handleGoogleLogin = () => {
@@ -62,18 +57,11 @@ const Login = () => {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                cookies.set("email", user.email);
-                addToFirebase(
-                    "users",
-                    {
-                        email: user.email,
-                    },
-                    (item) => item.email === user.email,
-
-                    () => {
-                        router.push("/main");
-                    }
-                );
+                if (accountExists((item) => item.email === user.email)) {
+                    cookies.set("email", user.email);
+                } else {
+                    setSignUpWrong("Account Doesn't Exist!");
+                }
             })
             .catch((error) => {
                 console.log("Google Login Error:", error);
@@ -253,19 +241,16 @@ const Login = () => {
                             }
                             setSignUpWrong(problem);
                             if (!problem) {
-                                cookies.set("email", emailInput);
-                                cookies.set("password", passwordInput);
-                                addToFirebase(
-                                    "users",
-                                    {
-                                        email: emailInput,
-                                        password: passwordInput,
-                                    },
-                                    (item) => item.email === emailInput,
-                                    () => {
-                                        router.push("/main");
-                                    }
-                                );
+                                if (
+                                    accountExists(
+                                        (item) => item.email === emailInput
+                                    )
+                                ) {
+                                    cookies.set("email", emailInput);
+                                    cookies.set("password", passwordInput);
+                                } else {
+                                    setSignUpWrong("Account Doesn't Exist!");
+                                }
                             }
                         }}
                         ref={signUpButton}
