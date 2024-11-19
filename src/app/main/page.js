@@ -149,13 +149,15 @@ const Main = () => {
 
     if (error) {
         return (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl">{error}</div>
+            <div className="bg-red-50 text-red-600 p-4 rounded-xl w-[80vw] ml-auto mr-auto mt-[80vh]">
+                {error}
+            </div>
         );
     }
 
     if (!userData) {
         return (
-            <div className="bg-yellow-50 text-yellow-600 p-4 rounded-xl">
+            <div className="bg-yellow-50 text-yellow-600 p-4 rounded-xl w-[80vw] ml-auto mr-auto mt-[80vh]">
                 No user data available
             </div>
         );
@@ -197,25 +199,27 @@ const Main = () => {
                     <motion.h1
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl font-bold text-white mb-8"
+                        className="text-[3vw] font-bold text-white mb-[2vw]"
                     >
                         Dashboard
                     </motion.h1>
 
-                    <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-2 gap-[5vw] mb-[2vw]">
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="p-6 bg-blue-500 text-white rounded-xl shadow-lg hover:bg-blue-600 transition-all"
+                            className="p-[1vw] border-blue-500 text-white rounded-xl shadow-lg hover:border-blue-600 border-2 transition-all"
                         >
+                            <i className="fa-solid fa-microphone mr-[1.5vw]"></i>
                             Quick Record
                         </motion.button>
 
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="p-6 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition-all"
+                            className="p-[1vw] border-red-500 text-white rounded-xl shadow-lg hover:border-red-600 border-2 transition-all "
                         >
+                            <i className="fa-brands fa-youtube mr-[1.5vw]"></i>
                             YouTube Video
                         </motion.button>
                     </div>
@@ -251,7 +255,7 @@ const Main = () => {
                                     key={file.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className={`p-4 rounded-lg flex items-center justify-between`}
+                                    className={`p-4 rounded-[1vw] flex items-center justify-between cursor-pointer hover:shadow-[0_0_2vw_rgba(255,255,255,0.7)]`}
                                 >
                                     <i
                                         className={`fa-regular fa-folder ${
@@ -291,40 +295,53 @@ const Main = () => {
                                             <MoreVertical className="w-5 h-5" />
                                         </button>
 
-                                        {showColorPicker === file.id && (
-                                            <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg p-2 z-10">
-                                                <div className="flex space-x-2">
-                                                    {backgrounds.map(
-                                                        (color, index) => (
-                                                            <button
-                                                                key={index}
-                                                                className={`w-6 h-6 rounded-full ${color}`}
-                                                                onClick={() =>
-                                                                    updateFileColor(
-                                                                        file.id,
-                                                                        index
-                                                                    )
-                                                                }
-                                                            />
-                                                        )
-                                                    )}
-                                                </div>
-                                                <button
-                                                    className="mt-2 text-sm text-gray-600 hover:text-gray-800"
-                                                    onClick={() => {
-                                                        setIsRenaming(file.id);
-                                                        setNewFileName(
-                                                            file.name
-                                                        );
-                                                        setShowColorPicker(
-                                                            null
-                                                        );
-                                                    }}
-                                                >
-                                                    Rename
-                                                </button>
+                                        <motion.div
+                                            className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg p-2 z-10 space-y-[2vh]"
+                                            animate={{
+                                                opacity:
+                                                    showColorPicker === file.id
+                                                        ? 1
+                                                        : 0,
+                                            }}
+                                        >
+                                            <div className="flex space-x-2">
+                                                {backgrounds.map(
+                                                    (color, index) => (
+                                                        <button
+                                                            key={index}
+                                                            className={`w-6 h-6 rounded-full ${color}`}
+                                                            onClick={() =>
+                                                                updateFileColor(
+                                                                    file.id,
+                                                                    index
+                                                                )
+                                                            }
+                                                        />
+                                                    )
+                                                )}
                                             </div>
-                                        )}
+                                            <button
+                                                className="text-sm text-gray-600 hover:text-gray-800"
+                                                onClick={() => {
+                                                    setIsRenaming(file.id);
+                                                    setNewFileName(file.name);
+                                                    setShowColorPicker(null);
+                                                }}
+                                            >
+                                                Rename
+                                            </button>
+                                            <button
+                                                className="w-full text-sm text-red-600 hover:text-red-800 hover:bg-red-50 px-[1vw] py-[0.5vw] rounded"
+                                                onClick={() =>
+                                                    deleteFile(file.id)
+                                                }
+                                            >
+                                                <i
+                                                    className={`fa-solid fa-trash text-red-600 hover:text-red-800 mr-[1vw]`}
+                                                ></i>
+                                                Delete
+                                            </button>
+                                        </motion.div>
                                     </div>
                                 </motion.div>
                             ))}
