@@ -70,11 +70,16 @@ const Signup = () => {
                     "users",
                     {
                         email: user.email,
+                        password: "",
+                        files: [],
                     },
                     (item) => item.email === user.email,
 
                     () => {
-                        router.push("/main");
+                        setBlobVisible(true);
+                        setTimeout(() => {
+                            router.push("/main");
+                        }, 1000);
                     }
                 );
             })
@@ -141,7 +146,7 @@ const Signup = () => {
 
                     <div
                         className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center mt-[3vh] hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
-                            signUpWrong === "Provide a password"
+                            signUpWrong === "Provide a valid email address"
                                 ? "animate-shake bg-[#CC0000] text-white"
                                 : "bg-[#414459]"
                         }`}
@@ -156,7 +161,7 @@ const Signup = () => {
                     </div>
                     <div
                         className={`h-[calc(4vh+2vw)] w-[30vw] flex flex-row pl-[1vw] pr-[1vw] rounded-full mt-[3vh] items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
-                            signUpWrong === "Provide a valid email address"
+                            signUpWrong === "Provide a password"
                                 ? "animate-shake bg-[#CC0000] text-white"
                                 : "bg-[#414459]"
                         }`}
@@ -337,7 +342,10 @@ const Signup = () => {
                         onClick={() => {
                             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                             let problem = null;
-                            if (!emailPattern || !emailInput) {
+                            console.log(
+                                !emailPattern.test(emailInput) || !emailInput
+                            );
+                            if (!emailPattern.test(emailInput) || !emailInput) {
                                 problem = "Provide a valid email address";
                             }
                             if (!passwordInput) {
@@ -352,11 +360,15 @@ const Signup = () => {
                                     {
                                         email: emailInput,
                                         password: passwordInput,
+                                        files: [],
                                     },
                                     (item) => item.email === emailInput,
 
                                     () => {
-                                        router.push("/main");
+                                        setBlobVisible(true);
+                                        setTimeout(() => {
+                                            router.push("/main");
+                                        }, 1000);
                                     }
                                 );
                             }

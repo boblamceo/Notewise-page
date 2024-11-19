@@ -42,14 +42,24 @@ const Login = () => {
     const cookies = useCookies();
     const router = useRouter();
 
-    const accountExists = async (filter) => {
+    const accountExists = async (filter, password, trueFunc, falseFunc) => {
         const querySnapshot = await getDocs(collection(db, "users"));
         const final = [];
         querySnapshot.forEach((doc) => {
             final.push(doc.data());
         });
         let filtered = final.filter(filter);
-        return filtered.length;
+
+        if (filtered.length) {
+            let passwordGood = password === filtered[0].password;
+            if (passwordGood) {
+                trueFunc();
+            } else {
+                falseFunc();
+            }
+        } else {
+            falseFunc();
+        }
     };
 
     const handleGoogleLogin = () => {
@@ -57,11 +67,17 @@ const Login = () => {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                if (accountExists((item) => item.email === user.email)) {
-                    cookies.set("email", user.email);
-                } else {
-                    setSignUpWrong("Account Doesn't Exist!");
-                }
+                accountExists(
+                    (item) => item.email === user.email,
+                    "",
+                    () => {
+                        cookies.set("email", user.email);
+                        router.push("/main");
+                    },
+                    () => {
+                        setSignUpWrong("Password Incorrect!");
+                    }
+                );
             })
             .catch((error) => {
                 console.log("Google Login Error:", error);
@@ -99,12 +115,12 @@ const Login = () => {
                 <div className="w-[50vw] h-screen flex justify-center flex-col pl-[10vw] pr-[10vw] scale-95">
                     <div className="font-bold text-[3vw] mb-[1vh]">Welcome</div>
                     <div className="text-[1.5vw] mb-[3vh] text-gray-500">
-                        Sign up to unlock Notewise!
+                        Log In to unlock Notewise!
                     </div>
 
                     <div
                         className={`w-[30vw] flex flex-row p-[1vw] rounded-full items-center mt-[3vh] hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
-                            signUpWrong === "Provide a password"
+                            signUpWrong === "Provide a valid email address"
                                 ? "animate-shake bg-[#CC0000] text-white"
                                 : "bg-[#414459]"
                         }`}
@@ -119,7 +135,7 @@ const Login = () => {
                     </div>
                     <div
                         className={`h-[calc(4vh+2vw)] w-[30vw] flex flex-row pl-[1vw] pr-[1vw] rounded-full mt-[3vh] items-center hover:drop-shadow-[0_0_1vw_rgba(255,255,255,0.75)] ${
-                            signUpWrong === "Provide a valid email address"
+                            signUpWrong === "Provide a password"
                                 ? "animate-shake bg-[#CC0000] text-white"
                                 : "bg-[#414459]"
                         }`}
@@ -160,7 +176,7 @@ const Login = () => {
                         </motion.div>
                     </div>
                     <motion.div
-                        className="rounded-xl border-white border-2 w-full p-[1vw] flex flex-row font-bold text-[1vw] justify-center items-center mt-[2vh] cursor-pointer"
+                        className="rounded-xl border-white border-2 w-full p-[1vw] flex flex-row font-bold text-[1vw] justify-center items-center mt-[3vh] cursor-pointer"
                         initial={{
                             scale: 1,
                         }}
@@ -241,21 +257,25 @@ const Login = () => {
                             }
                             setSignUpWrong(problem);
                             if (!problem) {
-                                if (
-                                    accountExists(
-                                        (item) => item.email === emailInput
-                                    )
-                                ) {
-                                    cookies.set("email", emailInput);
-                                    cookies.set("password", passwordInput);
-                                } else {
-                                    setSignUpWrong("Account Doesn't Exist!");
-                                }
+                                accountExists(
+                                    (item) => item.email === emailInput,
+                                    passwordInput,
+                                    () => {
+                                        console.log("yes");
+                                        cookies.set("email", emailInput);
+                                        cookies.set("password", passwordInput);
+
+                                        router.push("/main");
+                                    },
+                                    () => {
+                                        setSignUpWrong("Password Incorrect!");
+                                    }
+                                );
                             }
                         }}
                         ref={signUpButton}
                     >
-                        <div className="font-bold text-[1.5vw]">Sign Up</div>
+                        <div className="font-bold text-[1.5vw]">Log In</div>
                         <div
                             className={`bg-gradient-to-b to-indigo-500 from-indigo-800 to-75% p-[1vw] rounded-full relative ${
                                 signUpHovered &&
