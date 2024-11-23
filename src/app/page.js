@@ -15,9 +15,9 @@ export default function Home() {
     const [opacity, setOpacity] = useState(1);
     const router = useRouter();
     const cookies = useCookies();
-    // if (cookies.get("email")) {
-    //     router.push("/main");
-    // }
+    if (cookies.get("email")) {
+        router.push("/main");
+    }
     return (
         <motion.div
             className="flex flex-col -z-20 overflow-x-clip w-screen"
