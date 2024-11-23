@@ -14,6 +14,9 @@ import {
 import { db } from "../firebaseConfig";
 import { Plus, MoreVertical } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Button, Dialog } from "@mui/material";
+import YoutubePopup from "@/components/YoutubePopup";
 
 const Main = () => {
     const [userData, setUserData] = useState(null);
@@ -24,6 +27,10 @@ const Main = () => {
     const [newFileName, setNewFileName] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [deleteFileSure, setDeleteFile] = useState(false);
+    const [youtubePopupOpen, setYoutubePopupOpen] = useState(false);
+
+    const router = useRouter();
     const cookies = useCookies();
     const userEmail = cookies.get("email");
     const colors = [
@@ -139,6 +146,15 @@ const Main = () => {
         file.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    useEffect(() => {
+        if (!userEmail) {
+            router.push("/");
+        }
+    }, []);
+    useEffect(() => {
+        console.log(!!deleteFileSure);
+    }, [deleteFileSure]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -163,8 +179,67 @@ const Main = () => {
         );
     }
     return (
-        <div className="flex h-screen bg-black">
-            <div className="w-[20vw] bg-[#171820] shadow-lg p-[2vw]">
+        <motion.div
+            className="flex h-screen bg-black"
+            initial={{
+                opacity: 0,
+            }}
+            animate={{ opacity: 1 }}
+        >
+            <YoutubePopup
+                open={youtubePopupOpen}
+                change={setYoutubePopupOpen}
+            />
+            <Dialog
+                open={!!deleteFileSure}
+                onClose={() => {
+                    setDeleteFile(false);
+                }}
+            >
+                <div className="p-[2vw] space-y-[2vw] text-[1.5vw]">
+                    <div className="font-semibold">
+                        Do you really want to delete this file?
+                    </div>
+                    <div className="flex flex-row space-x-[2vw]">
+                        <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                                deleteFile(deleteFileSure);
+                                setDeleteFile(false);
+                            }}
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            sx={{
+                                color: "#808080",
+                            }}
+                            onClick={() => {
+                                setDeleteFile(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Dialog>
+            <motion.div
+                className="w-[20vw] bg-[#171820] shadow-lg p-[2vw]"
+                initial={{
+                    x: -200,
+                    opacity: 0,
+                }}
+                animate={{
+                    x: 0,
+                    opacity: 1,
+                }}
+                transition={{
+                    opacity: {
+                        duration: 1,
+                    },
+                }}
+            >
                 <div className="flex mb-[3vw]">
                     <img
                         src="/images/Logo.png"
@@ -192,10 +267,23 @@ const Main = () => {
                         <MicrophoneIcon className="w-5 h-5" />
                         <span>Quick Record</span>
                     </motion.button>
+                    <motion.button
+                        className="w-full text-sm text-red-600 hover:text-red-800 hover:bg-[rgba(255,0,0,0.05)] px-[1vw] py-[0.5vw] rounded"
+                        onClick={() => {
+                            cookies.remove("email");
+                            cookies.remove("password");
+                            router.push("/");
+                        }}
+                    >
+                        <i
+                            className={`fa-solid fa-right-from-bracket text-red-600 hover:text-red-800 mr-[1vw]`}
+                        ></i>
+                        Log Out
+                    </motion.button>
                 </nav>
-            </div>
-            <main className="flex-1 overflow-y-auto">
-                <div className="p-8">
+            </motion.div>
+            <main className="flex-1 overflow-y-hidden">
+                <div className="p-[3vw] pt-[4vw]">
                     <motion.h1
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -204,13 +292,13 @@ const Main = () => {
                         Dashboard
                     </motion.h1>
 
-                    <div className="grid grid-cols-2 gap-[5vw] mb-[2vw]">
+                    <div className="grid grid-cols-2 gap-[5vw] mb-[2vw] text-[1.3vw]">
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             className="p-[1vw] border-blue-500 text-white rounded-xl shadow-lg hover:border-blue-600 border-2 transition-all"
                         >
-                            <i className="fa-solid fa-microphone mr-[1.5vw]"></i>
+                            <span className="mr-[1.5vw]">🎙️</span>
                             Quick Record
                         </motion.button>
 
@@ -219,14 +307,18 @@ const Main = () => {
                             whileTap={{ scale: 0.98 }}
                             className="p-[1vw] border-red-500 text-white rounded-xl shadow-lg hover:border-red-600 border-2 transition-all "
                         >
-                            <i className="fa-brands fa-youtube mr-[1.5vw]"></i>
+                            <i className="fa-brands fa-youtube mr-[1.5vw] text-red-700 bg-clip-text"></i>
                             YouTube Video
                         </motion.button>
                     </div>
 
                     <div className="rounded-xl shadow-lg p-6">
                         <div className="flex items-center space-x-4 mb-6 justify-end">
-                            <div className="box">
+                            <motion.div
+                                className="box"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                            >
                                 <form name="search">
                                     <input
                                         type="text"
@@ -238,10 +330,12 @@ const Main = () => {
                                     ></input>
                                 </form>
                                 <i className="fas fa-search"></i>
-                            </div>
+                            </motion.div>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 onClick={createNewFile}
                                 className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
                             >
@@ -249,7 +343,7 @@ const Main = () => {
                             </motion.button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 h-[35vh] p-[2vw] overflow-x-visible overflow-y-scroll scrollbar">
                             {filteredFiles.map((file) => (
                                 <motion.div
                                     key={file.id}
@@ -274,11 +368,13 @@ const Main = () => {
                                                 e.key === "Enter" &&
                                                 renameFile(file.id)
                                             }
-                                            className="px-2 py-1 rounded"
+                                            className="px-2 py-1 rounded w-full pl-[5vw] outline-none"
                                             autoFocus
                                         />
                                     ) : (
-                                        <span>{file.name}</span>
+                                        <span className="w-full pl-[5vw]">
+                                            {file.name}
+                                        </span>
                                     )}
 
                                     <div className="relative">
@@ -296,12 +392,26 @@ const Main = () => {
                                         </button>
 
                                         <motion.div
-                                            className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg p-2 z-10 space-y-[2vh]"
+                                            className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg p-2 z-10"
+                                            initial={{
+                                                scale: 0,
+                                            }}
                                             animate={{
-                                                opacity:
+                                                y:
+                                                    showColorPicker === file.id
+                                                        ? 0
+                                                        : -80,
+                                                x:
+                                                    showColorPicker === file.id
+                                                        ? 0
+                                                        : 80,
+                                                scale:
                                                     showColorPicker === file.id
                                                         ? 1
                                                         : 0,
+                                            }}
+                                            transition={{
+                                                ease: "linear",
                                             }}
                                         >
                                             <div className="flex space-x-2">
@@ -321,7 +431,7 @@ const Main = () => {
                                                 )}
                                             </div>
                                             <button
-                                                className="text-sm text-gray-600 hover:text-gray-800"
+                                                className="text-sm text-gray-600 hover:text-gray-800 mt-[1vw]"
                                                 onClick={() => {
                                                     setIsRenaming(file.id);
                                                     setNewFileName(file.name);
@@ -331,13 +441,14 @@ const Main = () => {
                                                 Rename
                                             </button>
                                             <button
-                                                className="w-full text-sm text-red-600 hover:text-red-800 hover:bg-red-50 px-[1vw] py-[0.5vw] rounded"
-                                                onClick={() =>
-                                                    deleteFile(file.id)
-                                                }
+                                                className="w-full text-sm text-red-600 hover:bg-red-200 mt-[1vw] py-[0.5vw] rounded"
+                                                onClick={() => {
+                                                    setDeleteFile(file.id);
+                                                    console.log("done");
+                                                }}
                                             >
                                                 <i
-                                                    className={`fa-solid fa-trash text-red-600 hover:text-red-800 mr-[1vw]`}
+                                                    className={`fa-solid fa-trash mr-[1vw]`}
                                                 ></i>
                                                 Delete
                                             </button>
@@ -349,7 +460,7 @@ const Main = () => {
                     </div>
                 </div>
             </main>
-        </div>
+        </motion.div>
     );
 };
 

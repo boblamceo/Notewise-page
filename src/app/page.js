@@ -7,13 +7,17 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCookies } from "next-client-cookies";
 
 export default function Home() {
     const aboutRef = useRef(null);
     const startedRef = useRef(null);
     const [opacity, setOpacity] = useState(1);
     const router = useRouter();
-
+    const cookies = useCookies();
+    // if (cookies.get("email")) {
+    //     router.push("/main");
+    // }
     return (
         <motion.div
             className="flex flex-col -z-20 overflow-x-clip w-screen"

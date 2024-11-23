@@ -72,7 +72,10 @@ const Login = () => {
                     "",
                     () => {
                         cookies.set("email", user.email);
-                        router.push("/main");
+                        setBlobVisible(true);
+                        setTimeout(() => {
+                            router.push("/main");
+                        }, 1000);
                     },
                     () => {
                         setSignUpWrong("Password Incorrect!");
@@ -264,8 +267,10 @@ const Login = () => {
                                         console.log("yes");
                                         cookies.set("email", emailInput);
                                         cookies.set("password", passwordInput);
-
-                                        router.push("/main");
+                                        setBlobVisible(true);
+                                        setTimeout(() => {
+                                            router.push("/main");
+                                        }, 1000);
                                     },
                                     () => {
                                         setSignUpWrong("Password Incorrect!");
