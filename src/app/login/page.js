@@ -299,7 +299,7 @@ const Login = () => {
                         </div>
                     </div>
                     <div className="text-white text-[1vw] mt-[1vh] ml-auto mr-auto">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <span
                             className="text-cyan-400 cursor-pointer"
                             onClick={() => {
