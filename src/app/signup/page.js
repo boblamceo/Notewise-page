@@ -71,7 +71,7 @@ const Signup = () => {
                     {
                         email: user.email,
                         password: "",
-                        files: [],
+                        folders: [],
                     },
                     (item) => item.email === user.email,
 
@@ -360,7 +360,7 @@ const Signup = () => {
                                     {
                                         email: emailInput,
                                         password: passwordInput,
-                                        files: [],
+                                        folders: [],
                                     },
                                     (item) => item.email === emailInput,
 
